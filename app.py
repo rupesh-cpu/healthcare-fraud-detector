@@ -239,7 +239,6 @@ def show_results(result):
         use_container_width=True
     )
 
-    # -------- TABLE (ALWAYS VISIBLE) --------
     st.markdown(f"### {translations[lang]['results']}")
 
     st.dataframe(
