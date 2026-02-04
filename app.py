@@ -4,7 +4,7 @@ import plotly.express as px
 from backend import check_fraud, ocr_to_dataframe, pdf_to_dataframe
 
 # --------------------------------------------------
-# Page Config (ONLY ONCE – Streamlit rule)
+# Page Config (ONLY ONCE)
 # --------------------------------------------------
 st.set_page_config(
     page_title="Healthcare Fraud Detector",
@@ -14,58 +14,69 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# Global CSS
+# Professional Global CSS
 # --------------------------------------------------
 st.markdown("""
 <style>
-body {
-    background-color: #F4F6F7;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
 }
-.metric-card {
-    padding: 18px;
-    border-radius: 12px;
+
+body {
+    background: linear-gradient(135deg, #F2F6FA, #EAF0F6);
+}
+
+/* Header */
+.app-header {
+    background: linear-gradient(90deg, #0B3C5D, #1A5276);
+    padding: 32px;
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 32px;
+}
+
+/* Cards */
+.metric-card {
+    background: white;
+    padding: 22px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease;
+}
+.metric-card:hover {
+    transform: translateY(-4px);
 }
 .metric-title {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    color: #34495E;
+    color: #566573;
 }
 .metric-value {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 700;
+    color: #1C2833;
     margin-top: 6px;
 }
+
+/* Section */
 .section-box {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    margin-bottom: 25px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(6px);
+    padding: 26px;
+    border-radius: 18px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
 }
-.alert-box {
-    background: #FDEDEC;
-    padding: 14px;
-    border-left: 5px solid #C0392B;
-    border-radius: 6px;
-    font-weight: 600;
-    color: #922B21;
-    margin-top: 16px;
-}
+
+/* Footer */
 footer {
     text-align: center;
-    color: #7B7D7D;
+    color: #7F8C8D;
     font-size: 14px;
-    margin-top: 30px;
-}
-.suggestion {
-    padding: 8px;
-    border-bottom: 1px solid #E5E7E9;
-    cursor: pointer;
-}
-.suggestion:hover {
-    background-color: #EBF5FB;
+    margin-top: 40px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -73,58 +84,49 @@ footer {
 # --------------------------------------------------
 # Language Selector
 # --------------------------------------------------
-lang = st.selectbox("Choose Language / भाषा चुनें", ["English", "हिन्दी", "मराठी"])
+lang = st.selectbox("🌐 Choose Language / भाषा निवडा", ["English", "हिन्दी", "मराठी"])
 
 translations = {
     "English": {
         "title": "Healthcare Billing Fraud Detector",
-        "subtitle": "Upload hospital bills and verify approved medicine prices.",
+        "subtitle": "AI-assisted verification of hospital billing and medicine pricing",
         "input_method": "Choose Input Method",
         "upload_pdf": "Upload Bill PDF",
         "upload_image": "Upload Bill Image",
         "camera": "Scan Bill Using Camera",
-        "search_title": "Medicine Price Search",
-        "search_placeholder": "Type medicine name",
         "results": "Fraud Detection Results",
-        "total_items": "Total Items Checked",
-        "fraud_cases": "Fraud Cases Detected",
-        "fraud_percent": "Fraud Percentage",
-        "extra_charged": "Total Extra Charged",
-        "download": "Download Results as CSV",
-        "warning": "No valid items detected."
+        "total_items": "Items Analyzed",
+        "fraud_cases": "Fraud Detected",
+        "fraud_percent": "Fraud Rate",
+        "extra_charged": "Excess Amount",
+        "warning": "No valid bill items detected."
     },
     "हिन्दी": {
         "title": "स्वास्थ्य बिलिंग धोखाधड़ी डिटेक्टर",
-        "subtitle": "अस्पताल बिल अपलोड करें और दवा मूल्य जांचें।",
+        "subtitle": "अस्पताल बिल और दवा मूल्य का एआई आधारित सत्यापन",
         "input_method": "इनपुट विधि चुनें",
         "upload_pdf": "बिल PDF अपलोड करें",
         "upload_image": "बिल इमेज अपलोड करें",
         "camera": "कैमरे से स्कैन करें",
-        "search_title": "दवा मूल्य खोज",
-        "search_placeholder": "दवा का नाम टाइप करें",
         "results": "जांच परिणाम",
-        "total_items": "कुल आइटम",
+        "total_items": "जांचे गए आइटम",
         "fraud_cases": "धोखाधड़ी",
-        "fraud_percent": "धोखाधड़ी प्रतिशत",
+        "fraud_percent": "धोखाधड़ी दर",
         "extra_charged": "अतिरिक्त शुल्क",
-        "download": "CSV डाउनलोड करें",
         "warning": "कोई वैध आइटम नहीं मिला।"
     },
     "मराठी": {
         "title": "आरोग्य बिलिंग फसवणूक शोधक",
-        "subtitle": "रुग्णालय बिल अपलोड करा व औषध दर तपासा.",
+        "subtitle": "रुग्णालय बिल व औषध दरांचे एआय आधारित विश्लेषण",
         "input_method": "इनपुट पद्धत निवडा",
         "upload_pdf": "PDF अपलोड करा",
         "upload_image": "इमेज अपलोड करा",
         "camera": "कॅमेऱ्याने स्कॅन करा",
-        "search_title": "औषध दर शोध",
-        "search_placeholder": "औषध नाव टाइप करा",
         "results": "तपासणी निकाल",
-        "total_items": "एकूण आयटम",
+        "total_items": "तपासलेले आयटम",
         "fraud_cases": "फसवणूक",
-        "fraud_percent": "टक्केवारी",
+        "fraud_percent": "फसवणूक दर",
         "extra_charged": "अतिरिक्त रक्कम",
-        "download": "CSV डाउनलोड करा",
         "warning": "वैध आयटम आढळले नाहीत."
     }
 }
@@ -133,9 +135,9 @@ translations = {
 # Header
 # --------------------------------------------------
 st.markdown(f"""
-<div style="background:#1A5276;padding:26px;border-radius:12px;text-align:center;margin-bottom:30px;">
-    <h1 style="color:white;">{translations[lang]['title']}</h1>
-    <p style="color:#ECF0F1;">{translations[lang]['subtitle']}</p>
+<div class="app-header">
+    <h1 style="color:white;margin-bottom:8px;">{translations[lang]['title']}</h1>
+    <p style="color:#D6EAF8;font-size:17px;">{translations[lang]['subtitle']}</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -153,7 +155,7 @@ option = st.radio(
 )
 
 # --------------------------------------------------
-# Upload Handling (STATE SAFE)
+# Upload Handling
 # --------------------------------------------------
 if option == translations[lang]["upload_pdf"]:
     pdf = st.file_uploader("", type=["pdf"])
@@ -171,46 +173,7 @@ elif option == translations[lang]["camera"]:
         st.session_state["fraud_results"] = check_fraud(ocr_to_dataframe(cam))
 
 # --------------------------------------------------
-# Medicine MRP Database
-# --------------------------------------------------
-medicine_db = pd.DataFrame({
-    "medicine_name": [
-        "Paracetamol", "Amoxicillin", "Azithromycin",
-        "Cetirizine", "Ibuprofen", "Metformin",
-        "Pantoprazole", "Dolo 650", "Crocin"
-    ],
-    "mrp_price": [25, 110, 120, 18, 30, 45, 70, 30, 28],
-    "category": [
-        "Pain Relief", "Antibiotic", "Antibiotic",
-        "Antihistamine", "Pain Relief", "Diabetes",
-        "Gastric", "Pain Relief", "Pain Relief"
-    ]
-})
-
-# --------------------------------------------------
-# Medicine Smart Search
-# --------------------------------------------------
-st.markdown(f"<div class='section-box'><h3>{translations[lang]['search_title']}</h3>", unsafe_allow_html=True)
-
-query = st.text_input(translations[lang]["search_placeholder"])
-
-if query:
-    matches = medicine_db[
-        medicine_db["medicine_name"].str.contains(query, case=False)
-    ].head(5)
-
-    for _, row in matches.iterrows():
-        if st.button(row["medicine_name"]):
-            st.success(
-                f"Medicine: {row['medicine_name']} | "
-                f"MRP: ₹{row['mrp_price']} | "
-                f"Category: {row['category']}"
-            )
-
-st.markdown("</div>", unsafe_allow_html=True)
-
-# --------------------------------------------------
-# Fraud Results
+# Results Display
 # --------------------------------------------------
 def show_results(result):
     if result.empty:
@@ -229,26 +192,24 @@ def show_results(result):
     col3.markdown(f"<div class='metric-card'><div class='metric-title'>{translations[lang]['fraud_percent']}</div><div class='metric-value'>{fraud_percent:.2f}%</div></div>", unsafe_allow_html=True)
     col4.markdown(f"<div class='metric-card'><div class='metric-title'>{translations[lang]['extra_charged']}</div><div class='metric-value'>₹{total_extra:.2f}</div></div>", unsafe_allow_html=True)
 
-    chart_df = pd.DataFrame({
-        "Status": ["Fraud", "Valid"],
-        "Count": [fraud_count, total_items - fraud_count]
-    })
-
     st.plotly_chart(
-        px.pie(chart_df, names="Status", values="Count", hole=0.4),
+        px.pie(
+            pd.DataFrame({
+                "Status": ["Fraud", "Valid"],
+                "Count": [fraud_count, total_items - fraud_count]
+            }),
+            names="Status",
+            values="Count",
+            hole=0.45
+        ),
         use_container_width=True
     )
 
     st.markdown(f"### {translations[lang]['results']}")
-
-    st.dataframe(
-        result[["item", "quantity", "billed_mrp", "actual_mrp", "status"]],
-        use_container_width=True,
-        hide_index=True
-    )
+    st.dataframe(result, use_container_width=True, hide_index=True)
 
 # --------------------------------------------------
-# Show Results Persistently
+# Persistent Results
 # --------------------------------------------------
 if "fraud_results" in st.session_state:
     show_results(st.session_state["fraud_results"])
@@ -257,6 +218,6 @@ if "fraud_results" in st.session_state:
 # Footer
 # --------------------------------------------------
 st.markdown(
-    "<footer>© 2026 Government of India – Healthcare Fraud Detection Initiative</footer>",
+    "<footer>© 2026 Government of India • Digital Health Intelligence Platform</footer>",
     unsafe_allow_html=True
 )
