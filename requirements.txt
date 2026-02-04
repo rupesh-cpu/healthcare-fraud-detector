@@ -3,6 +3,7 @@ pandas
 pytesseract
 pillow
 matplotlib
-streamlit
-pandas
 plotly
+numpy
+scikit-learn
+pdfplumber
