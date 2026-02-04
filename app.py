@@ -4,10 +4,11 @@ import plotly.express as px
 from backend import check_fraud, ocr_to_dataframe, pdf_to_dataframe
 
 # --------------------------------------------------
-# Page Config
+# Page Config (ONLY ONCE – Streamlit rule)
 # --------------------------------------------------
 st.set_page_config(
     page_title="Healthcare Fraud Detector",
+    page_icon="💊",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -139,7 +140,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# Input Method (Upload Section)
+# Input Method
 # --------------------------------------------------
 option = st.radio(
     translations[lang]["input_method"],
@@ -151,28 +152,26 @@ option = st.radio(
     horizontal=True
 )
 
-uploaded = False
-
+# --------------------------------------------------
+# Upload Handling (STATE SAFE)
+# --------------------------------------------------
 if option == translations[lang]["upload_pdf"]:
     pdf = st.file_uploader("", type=["pdf"])
     if pdf:
-        uploaded = True
-        show_df = check_fraud(pdf_to_dataframe(pdf))
+        st.session_state["fraud_results"] = check_fraud(pdf_to_dataframe(pdf))
 
 elif option == translations[lang]["upload_image"]:
     img = st.file_uploader("", type=["jpg", "jpeg", "png"])
     if img:
-        uploaded = True
-        show_df = check_fraud(ocr_to_dataframe(img))
+        st.session_state["fraud_results"] = check_fraud(ocr_to_dataframe(img))
 
 elif option == translations[lang]["camera"]:
     cam = st.camera_input("")
     if cam:
-        uploaded = True
-        show_df = check_fraud(ocr_to_dataframe(cam))
+        st.session_state["fraud_results"] = check_fraud(ocr_to_dataframe(cam))
 
 # --------------------------------------------------
-# Medicine MRP Database (Replace later with CSV/DB)
+# Medicine MRP Database
 # --------------------------------------------------
 medicine_db = pd.DataFrame({
     "medicine_name": [
@@ -189,7 +188,7 @@ medicine_db = pd.DataFrame({
 })
 
 # --------------------------------------------------
-# Medicine Smart Search (BELOW Upload Section)
+# Medicine Smart Search
 # --------------------------------------------------
 st.markdown(f"<div class='section-box'><h3>{translations[lang]['search_title']}</h3>", unsafe_allow_html=True)
 
@@ -235,13 +234,30 @@ def show_results(result):
         "Count": [fraud_count, total_items - fraud_count]
     })
 
-    st.plotly_chart(px.pie(chart_df, names="Status", values="Count", hole=0.4), use_container_width=True)
+    st.plotly_chart(
+        px.pie(chart_df, names="Status", values="Count", hole=0.4),
+        use_container_width=True
+    )
 
-# Show fraud results if uploaded
-if uploaded:
-    show_results(show_df)
+    # -------- TABLE (ALWAYS VISIBLE) --------
+    st.markdown(f"### {translations[lang]['results']}")
+
+    st.dataframe(
+        result[["item", "quantity", "billed_mrp", "actual_mrp", "status"]],
+        use_container_width=True,
+        hide_index=True
+    )
+
+# --------------------------------------------------
+# Show Results Persistently
+# --------------------------------------------------
+if "fraud_results" in st.session_state:
+    show_results(st.session_state["fraud_results"])
 
 # --------------------------------------------------
 # Footer
 # --------------------------------------------------
-st.markdown("<footer>© 2026 Government of India – Healthcare Fraud Detection Initiative</footer>", unsafe_allow_html=True)
+st.markdown(
+    "<footer>© 2026 Government of India – Healthcare Fraud Detection Initiative</footer>",
+    unsafe_allow_html=True
+)
