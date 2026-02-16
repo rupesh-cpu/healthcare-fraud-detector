@@ -80,9 +80,11 @@ This app provides an **AI-powered fraud detection system** that automatically ve
 
 ---
 
+## 📊 Live Dashboard
+👉 [Open Healthcare Fraud Detector](https://rupesh-cpu-healthcare-fraud-detector-app-zheryv.streamlit.app/)
+
+---
+
 ## 📜 License
 © 2026 Government of India – Healthcare Fraud Detection Initiative  
-Developed by **Rupesh Ramnath Patare**  
-- Keep mrp_master.csv updated with latest MRP data.
-- fraud_detection.db is auto-generated.
-- Use sample_bills/ for testing.
+Developed by **Rupesh Ramnath Patare**
