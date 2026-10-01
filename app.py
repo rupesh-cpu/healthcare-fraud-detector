@@ -179,7 +179,7 @@ def show_results(result):
     def highlight_fraud(val):
         return 'background-color: #F1948A' if val == "Fraud Detected" else 'background-color: #82E0AA'
 
-    st.dataframe(result.style.applymap(highlight_fraud, subset=["status"]), use_container_width=True)
+    st.dataframe(result.style.map(highlight_fraud, subset=["status"]), use_container_width=True)
 
 # --------------------------------------------------
 # Persistent Results
@@ -221,7 +221,7 @@ def show_results(result):
     def highlight_fraud(val):
         return 'background-color: #F1948A' if val == "Fraud Detected" else 'background-color: #82E0AA'
 
-    st.dataframe(result_display.style.applymap(highlight_fraud, subset=["Fraud Status"]), use_container_width=True)
+    st.dataframe(result_display.style.map(highlight_fraud, subset=["Fraud Status"]), use_container_width=True)
 if "fraud_results" in st.session_state:
     show_results(st.session_state["fraud_results"])
 
